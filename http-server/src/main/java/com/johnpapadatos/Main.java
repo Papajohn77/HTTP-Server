@@ -15,6 +15,9 @@ public class Main {
     private static final int DEFAULT_KEEP_ALIVE = 3000;
 
     public static void main(String[] args) {
+        // Read a configuration file from a specific location
+        // Parse the configuration file and create a Config DTO
+
         try (ServerSocket serverSocket = new ServerSocket(DEFAULT_PORT)) {
             // Ensures that the server will be able to restart without
             // waiting for old connections to time out.

@@ -1,125 +1,74 @@
 package com.johnpapadatos;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.TreeMap;
 
 public class HttpRequestParser {
-    private static final int END_OF_STREAM_INDICATOR = -1;
-    private static final int CARRIAGE_RETURN_ASCII_CODE = 13;
-    private static final int NEW_LINE_ASCII_CODE = 10;
-    private static final int SPACE_ASCII_CODE = 32;
 
     private HttpRequestParser() {
     }
 
-    public static HttpRequest parseRequest(InputStream in) throws IOException {
+    public static HttpRequest parseRequest(BufferedReader br) throws IOException {
         HttpRequest httpRequest = new HttpRequest();
-        parseRequestLine(in, httpRequest);
-        parseHeaders(in, httpRequest);
-        parseRequestBody(in, httpRequest);
+        parseRequestLine(br, httpRequest);
+        parseRequestHeaders(br, httpRequest);
+        parseRequestBody(br, httpRequest);
         return httpRequest;
     }
 
     private static void parseRequestLine(
-            InputStream is, HttpRequest httpRequest) throws IOException {
-        int bufferIdx = 0;
-        byte[] buffer = new byte[256];
-
-        int numOfSpacesEncountered = 0;
-        boolean requestLineProcessed = false;
-        while (!requestLineProcessed) {
-            int currByte = is.read();
-            if (currByte != SPACE_ASCII_CODE && currByte != CARRIAGE_RETURN_ASCII_CODE) {
-                buffer[bufferIdx] = (byte) currByte;
-                bufferIdx++;
-                continue;
-            }
-
-            if (numOfSpacesEncountered == 0) {
-                httpRequest.setMethod(new String(buffer).substring(0, bufferIdx));
-                numOfSpacesEncountered++;
-                buffer = new byte[256];
-                bufferIdx = 0;
-            } else if (numOfSpacesEncountered == 1) {
-                httpRequest.setPath(new String(buffer).substring(0, bufferIdx));
-                numOfSpacesEncountered++;
-                buffer = new byte[256];
-                bufferIdx = 0;
-            } else if (numOfSpacesEncountered == 2) {
-                httpRequest.setVersion(new String(buffer).substring(0, bufferIdx));
-                numOfSpacesEncountered++;
-                buffer = new byte[256];
-                bufferIdx = 0;
-                requestLineProcessed = true;
-            }
+            BufferedReader br, HttpRequest httpRequest) throws IOException {
+        String[] requestLineParts = br.readLine().split(" ");
+        if (requestLineParts.length != 3) {
+            throw new IllegalArgumentException("Invalid request-line.");
         }
 
-        is.skipNBytes(1); // Skip new line feed
+        String method = requestLineParts[0];
+        if (!method.equals("GET")) {
+            throw new IllegalArgumentException(method + " method not supported.");
+        }
+        httpRequest.setMethod(method);
+
+        String path = requestLineParts[1];
+        if (!path.startsWith("/")) {
+            throw new IllegalArgumentException("Invalid request-target.");
+        }
+        httpRequest.setPath(path);
+
+        String version = requestLineParts[2];
+        if (!version.equals("HTTP/1.1")) {
+            throw new IllegalArgumentException("Currently only HTTP 1.1 is supported.");
+        }
+        httpRequest.setVersion(version);
     }
 
-    private static void parseHeaders(
-            InputStream is, HttpRequest httpRequest) throws IOException {
+    private static void parseRequestHeaders(
+            BufferedReader br, HttpRequest httpRequest) throws IOException {
         var headers = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
-        String key = null;
-        String value = null;
 
-        int bufferIdx = 0;
-        byte[] buffer = new byte[256];
-
-        int counter = 0;
-        int currByte;
-        while ((currByte = is.read()) != END_OF_STREAM_INDICATOR) { // Never EOS
-            if (currByte == CARRIAGE_RETURN_ASCII_CODE || currByte == NEW_LINE_ASCII_CODE) {
-                counter++;
-                if (counter == 4) {
-                    break;
-                }
-            } else {
-                counter = 0;
+        String line;
+        while (!(line = br.readLine()).isEmpty()) {
+            String[] headerParts = line.split(": ");
+            if (headerParts.length != 2) {
+                throw new IllegalArgumentException("Invalid header: " + line);
             }
-
-            if (currByte != SPACE_ASCII_CODE
-                    && currByte != CARRIAGE_RETURN_ASCII_CODE
-                    && currByte != NEW_LINE_ASCII_CODE) {
-                buffer[bufferIdx] = (byte) currByte;
-                bufferIdx++;
-                continue;
-            }
-
-            if (currByte == SPACE_ASCII_CODE) {
-                // Exclude the colon byte
-                key = new String(buffer).substring(0, bufferIdx - 1);
-                buffer = new byte[256];
-                bufferIdx = 0;
-            } else if (counter <= 1 && currByte == CARRIAGE_RETURN_ASCII_CODE) {
-                value = new String(buffer).substring(0, bufferIdx);
-                buffer = new byte[256];
-                bufferIdx = 0;
-
-                if (key == null || value == null) {
-                    throw new IllegalStateException("Invalid HTTP headers");
-                }
-
-                headers.put(key, value);
-                key = null;
-                value = null;
-            }
+            headers.put(headerParts[0], headerParts[1]);
         }
 
         httpRequest.setHeaders(headers);
     }
 
     private static void parseRequestBody(
-            InputStream is, HttpRequest httpRequest) throws IOException {
+            BufferedReader br, HttpRequest httpRequest) throws IOException {
         if (!httpRequest.getHeaders().containsKey("Content-Length")) {
             httpRequest.setBody("");
             return;
         }
 
         int contentLength = Integer.parseInt(httpRequest.getHeaders().get("Content-Length"));
-        byte[] bytes = new byte[contentLength];
-        is.read(bytes, 0, bytes.length);
-        httpRequest.setBody(new String(bytes));
+        char[] buffer = new char[contentLength];
+        br.read(buffer, 0, buffer.length);
+        httpRequest.setBody(new String(buffer));
     }
 }
