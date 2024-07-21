@@ -17,7 +17,7 @@ public class WorkerRunnable implements Runnable {
         try (InputStream in = socket.getInputStream();
                 OutputStream out = socket.getOutputStream()) {
 
-            // Process the HTTP request here
+            HttpRequest httpRequest = HttpRequestParser.parseRequest(in);
 
             out.write("HTTP/1.1 200 OK\r\n\r\n".getBytes());
 
