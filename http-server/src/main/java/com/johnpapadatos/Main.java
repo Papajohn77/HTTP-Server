@@ -18,17 +18,17 @@ public class Main {
         // Read a configuration file from a specific location
         // Parse the configuration file and create a Config DTO
 
+        ExecutorService threadPool = new ThreadPoolExecutor(
+                DEFAULT_CORE_POOL_SIZE,
+                DEFAULT_MAX_POOL_SIZE,
+                DEFAULT_KEEP_ALIVE,
+                TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<>());
+
         try (ServerSocket serverSocket = new ServerSocket(DEFAULT_PORT)) {
             // Ensures that the server will be able to restart without
             // waiting for old connections to time out.
             serverSocket.setReuseAddress(true);
-
-            ExecutorService threadPool = new ThreadPoolExecutor(
-                    DEFAULT_CORE_POOL_SIZE,
-                    DEFAULT_MAX_POOL_SIZE,
-                    DEFAULT_KEEP_ALIVE,
-                    TimeUnit.MILLISECONDS,
-                    new LinkedBlockingQueue<>());
 
             while (true) {
                 Socket socket = serverSocket.accept();
@@ -36,7 +36,8 @@ public class Main {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            System.out.println("IOException: " + e.getMessage());
+        } finally {
+            threadPool.shutdown();
         }
     }
 }

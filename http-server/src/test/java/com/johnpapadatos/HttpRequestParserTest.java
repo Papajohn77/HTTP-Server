@@ -7,7 +7,6 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.TreeMap;
 
 import org.junit.jupiter.api.Test;
 
@@ -121,7 +120,6 @@ class HttpRequestParserTest {
         expectedHttpRequest.setMethod("GET");
         expectedHttpRequest.setPath("/");
         expectedHttpRequest.setVersion("HTTP/1.1");
-        expectedHttpRequest.setHeaders(new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER));
         expectedHttpRequest.setBody("");
         return expectedHttpRequest;
     }
@@ -131,11 +129,9 @@ class HttpRequestParserTest {
         expectedHttpRequest.setMethod("GET");
         expectedHttpRequest.setPath("/");
         expectedHttpRequest.setVersion("HTTP/1.1");
-        var headers = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
-        headers.put("Host", "localhost:4221");
-        headers.put("User-Agent", "curl/7.64.1");
-        headers.put("Accept", "*/*");
-        expectedHttpRequest.setHeaders(headers);
+        expectedHttpRequest.setHeader("Host", "localhost:4221");
+        expectedHttpRequest.setHeader("User-Agent", "curl/7.64.1");
+        expectedHttpRequest.setHeader("Accept", "*/*");
         expectedHttpRequest.setBody("");
         return expectedHttpRequest;
     }
@@ -145,13 +141,11 @@ class HttpRequestParserTest {
         expectedHttpRequest.setMethod("GET");
         expectedHttpRequest.setPath("/");
         expectedHttpRequest.setVersion("HTTP/1.1");
-        var headers = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
-        headers.put("Host", "localhost:4221");
-        headers.put("User-Agent", "curl/7.64.1");
-        headers.put("Accept", "*/*");
-        headers.put("Content-Type", "application/json");
-        headers.put("Content-Length", "8");
-        expectedHttpRequest.setHeaders(headers);
+        expectedHttpRequest.setHeader("Host", "localhost:4221");
+        expectedHttpRequest.setHeader("User-Agent", "curl/7.64.1");
+        expectedHttpRequest.setHeader("Accept", "*/*");
+        expectedHttpRequest.setHeader("Content-Type", "application/json");
+        expectedHttpRequest.setHeader("Content-Length", "8");
         expectedHttpRequest.setBody("{\"id\":1}");
         return expectedHttpRequest;
     }
@@ -161,11 +155,9 @@ class HttpRequestParserTest {
         expectedHttpRequest.setMethod("GET");
         expectedHttpRequest.setPath("/");
         expectedHttpRequest.setVersion("HTTP/1.1");
-        var headers = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
-        headers.put("Host", "localhost:4221");
-        headers.put("User-Agent", "curl/7.64.1");
-        headers.put("Accept", "*/*");
-        expectedHttpRequest.setHeaders(headers);
+        expectedHttpRequest.setHeader("Host", "localhost:4221");
+        expectedHttpRequest.setHeader("User-Agent", "curl/7.64.1");
+        expectedHttpRequest.setHeader("Accept", "*/*");
         expectedHttpRequest.setBody("");
         return expectedHttpRequest;
     }

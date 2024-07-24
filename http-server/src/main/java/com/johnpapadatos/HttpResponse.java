@@ -3,30 +3,16 @@ package com.johnpapadatos;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class HttpRequest {
-    private String method;
-    private String path;
+public class HttpResponse {
+    private static final String CRLF = "\r\n";
+
     private String version;
+    private String statusCode;
+    private String reasonPhrase;
     private final Map<String, String> headers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     private String body;
 
-    public HttpRequest() {
-    }
-
-    public String getMethod() {
-        return method;
-    }
-
-    public void setMethod(String method) {
-        this.method = method;
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
+    public HttpResponse() {
     }
 
     public String getVersion() {
@@ -35,6 +21,22 @@ public class HttpRequest {
 
     public void setVersion(String version) {
         this.version = version;
+    }
+
+    public String getStatusCode() {
+        return statusCode;
+    }
+
+    public void setStatusCode(String statusCode) {
+        this.statusCode = statusCode;
+    }
+
+    public String getReasonPhrase() {
+        return reasonPhrase;
+    }
+
+    public void setReasonPhrase(String reasonPhrase) {
+        this.reasonPhrase = reasonPhrase;
     }
 
     public Map<String, String> getHeaders() {
@@ -57,9 +59,9 @@ public class HttpRequest {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((method == null) ? 0 : method.hashCode());
-        result = prime * result + ((path == null) ? 0 : path.hashCode());
         result = prime * result + ((version == null) ? 0 : version.hashCode());
+        result = prime * result + ((statusCode == null) ? 0 : statusCode.hashCode());
+        result = prime * result + ((reasonPhrase == null) ? 0 : reasonPhrase.hashCode());
         result = prime * result + ((headers == null) ? 0 : headers.hashCode());
         result = prime * result + ((body == null) ? 0 : body.hashCode());
         return result;
@@ -73,21 +75,21 @@ public class HttpRequest {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        HttpRequest other = (HttpRequest) obj;
-        if (method == null) {
-            if (other.method != null)
-                return false;
-        } else if (!method.equals(other.method))
-            return false;
-        if (path == null) {
-            if (other.path != null)
-                return false;
-        } else if (!path.equals(other.path))
-            return false;
+        HttpResponse other = (HttpResponse) obj;
         if (version == null) {
             if (other.version != null)
                 return false;
         } else if (!version.equals(other.version))
+            return false;
+        if (statusCode == null) {
+            if (other.statusCode != null)
+                return false;
+        } else if (!statusCode.equals(other.statusCode))
+            return false;
+        if (reasonPhrase == null) {
+            if (other.reasonPhrase != null)
+                return false;
+        } else if (!reasonPhrase.equals(other.reasonPhrase))
             return false;
         if (headers == null) {
             if (other.headers != null)
@@ -102,13 +104,24 @@ public class HttpRequest {
         return true;
     }
 
+    public byte[] asBytes() {
+        StringBuilder response = new StringBuilder();
+        response.append(version).append(" ").append(statusCode).append(" ").append(reasonPhrase).append(CRLF);
+        response.append(
+                String.join(CRLF, headers.entrySet().stream().map(h -> h.getKey() + ": " + h.getValue()).toList()));
+        response.append(CRLF).append(CRLF);
+        response.append(body);
+        return response.toString().getBytes();
+    }
+
     @Override
     public String toString() {
-        return "HttpRequest [method=" + method
-                + ", path=" + path
-                + ", version=" + version
+        return "HttpResponse [version=" + version
+                + ", statusCode=" + statusCode
+                + ", reasonPhrase=" + reasonPhrase
                 + ", headers=" + headers
                 + ", body=" + body
                 + "]";
     }
+
 }

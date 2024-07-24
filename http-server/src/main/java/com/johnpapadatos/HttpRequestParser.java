@@ -2,7 +2,6 @@ package com.johnpapadatos;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.TreeMap;
 
 public class HttpRequestParser {
 
@@ -34,6 +33,9 @@ public class HttpRequestParser {
         if (!path.startsWith("/")) {
             throw new IllegalArgumentException("Invalid request-target.");
         }
+        if (!path.contains(".")) {
+            throw new IllegalArgumentException("Missing file extension in the request URL.");
+        }
         httpRequest.setPath(path);
 
         String version = requestLineParts[2];
@@ -45,18 +47,14 @@ public class HttpRequestParser {
 
     private static void parseRequestHeaders(
             BufferedReader br, HttpRequest httpRequest) throws IOException {
-        var headers = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
-
         String line;
         while (!(line = br.readLine()).isEmpty()) {
             String[] headerParts = line.split(": ");
             if (headerParts.length != 2) {
                 throw new IllegalArgumentException("Invalid header: " + line);
             }
-            headers.put(headerParts[0], headerParts[1]);
+            httpRequest.setHeader(headerParts[0], headerParts[1]);
         }
-
-        httpRequest.setHeaders(headers);
     }
 
     private static void parseRequestBody(
