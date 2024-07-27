@@ -10,9 +10,11 @@ import java.nio.file.NoSuchFileException;
 
 public class WorkerRunnable implements Runnable {
     private final Socket socket;
+    private final String baseDir;
 
-    public WorkerRunnable(Socket socket) {
+    public WorkerRunnable(Socket socket, String baseDir) {
         this.socket = socket;
+        this.baseDir = baseDir;
     }
 
     @Override
@@ -20,7 +22,7 @@ public class WorkerRunnable implements Runnable {
         try {
             InputStream in = socket.getInputStream();
             OutputStream out = socket.getOutputStream();
-            handleNetworkRequest(in, out);
+            handleNetworkRequest(in, out, baseDir);
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -32,11 +34,11 @@ public class WorkerRunnable implements Runnable {
         }
     }
 
-    private static void handleNetworkRequest(InputStream in, OutputStream out) throws IOException {
+    private static void handleNetworkRequest(InputStream in, OutputStream out, String baseDir) throws IOException {
         try {
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
             HttpRequest httpRequest = HttpRequestParser.parseRequest(br);
-            HttpResponse httpResponse = HttpRequestProcessor.processRequest(httpRequest);
+            HttpResponse httpResponse = HttpRequestProcessor.processRequest(httpRequest, baseDir);
             out.write(httpResponse.asBytes());
             out.flush();
         } catch (IllegalArgumentException e) {
@@ -45,9 +47,6 @@ public class WorkerRunnable implements Runnable {
         } catch (NoSuchFileException e) {
             e.printStackTrace();
             ErrorResponseHandler.send404ErrorResponse(out, e.getMessage());
-        } catch (UnsupportedMediaTypeException e) {
-            e.printStackTrace();
-            ErrorResponseHandler.send415ErrorResponse(out, e.getMessage());
         } catch (IOException e) {
             e.printStackTrace();
             ErrorResponseHandler.send500ErrorResponse(out, e.getMessage());

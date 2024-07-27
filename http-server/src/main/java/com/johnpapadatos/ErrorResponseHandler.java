@@ -21,12 +21,6 @@ public class ErrorResponseHandler {
         out.flush();
     }
 
-    public static void send415ErrorResponse(OutputStream out, String message) throws IOException {
-        String response = buildErrorResponse("415", "Unsupported Media Type", message);
-        out.write(response.getBytes());
-        out.flush();
-    }
-
     public static void send500ErrorResponse(OutputStream out, String message) throws IOException {
         String response = buildErrorResponse("500", "Internal Server Error", message);
         out.write(response.getBytes());

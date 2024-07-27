@@ -7,10 +7,11 @@ public class HttpRequest {
     private String method;
     private String path;
     private String version;
-    private final Map<String, String> headers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    private final Map<String, String> headers;
     private String body;
 
     public HttpRequest() {
+        headers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     }
 
     public String getMethod() {

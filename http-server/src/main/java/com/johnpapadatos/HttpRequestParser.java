@@ -33,9 +33,6 @@ public class HttpRequestParser {
         if (!path.startsWith("/")) {
             throw new IllegalArgumentException("Invalid request-target.");
         }
-        if (!path.contains(".")) {
-            throw new IllegalArgumentException("Missing file extension in the request URL.");
-        }
         httpRequest.setPath(path);
 
         String version = requestLineParts[2];

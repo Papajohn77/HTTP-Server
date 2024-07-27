@@ -3,33 +3,41 @@ package com.johnpapadatos;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Arrays;
+import java.nio.file.NoSuchFileException;
 import java.util.Map;
-import java.util.Optional;
+
+import org.apache.tika.Tika;
 
 public class HttpRequestProcessor {
 
     private HttpRequestProcessor() {
     }
 
-    public static HttpResponse processRequest(HttpRequest httpRequest)
-            throws IOException, UnsupportedMediaTypeException {
-        File requestedResource = new File(httpRequest.getPath().substring(1)); // Strip "/"
-        byte[] fileContents = Files.readAllBytes(requestedResource.toPath());
-        String mimeType = getMimeType(httpRequest.getPath());
-        String contentDisposition = getContentDisposition(httpRequest.getHeaders(), requestedResource.getName());
+    public static HttpResponse processRequest(HttpRequest httpRequest, String baseDir) throws IOException {
+        if (baseDir.endsWith("/")) {
+            baseDir = baseDir.substring(0, baseDir.length() - 1); // Strip trailing "/"
+        }
+
+        File requestedResource = new File(baseDir + httpRequest.getPath());
+        byte[] fileContents = readFileContents(requestedResource);
+        String mimeType = new Tika().detect(requestedResource);
+        String contentDisposition = getContentDisposition(httpRequest.getHeaders(),
+                getFilename(requestedResource.getName()));
         return buildSuccessfulResponse(fileContents, mimeType, contentDisposition);
     }
 
-    private static String getMimeType(String path) throws UnsupportedMediaTypeException {
-        String fileExtension = path.substring(path.lastIndexOf(".") + 1);
-        Optional<MIME> mime = Arrays.stream(MIME.values())
-                .filter(m -> fileExtension.equals(m.getExtension()))
-                .findFirst();
-        if (!mime.isPresent()) {
-            throw new UnsupportedMediaTypeException(fileExtension.toUpperCase() + " is not supported.");
+    private static byte[] readFileContents(File file) throws IOException {
+        try {
+            return Files.readAllBytes(file.toPath());
+        } catch (NoSuchFileException e) {
+            e.printStackTrace();
+            String message = "File " + getFilename(e.getMessage()) + " not found.";
+            throw new NoSuchFileException(message);
         }
-        return mime.get().getMimeType();
+    }
+
+    private static String getFilename(String path) {
+        return path.substring(path.lastIndexOf("\\") + 1);
     }
 
     private static String getContentDisposition(Map<String, String> requestHeaders, String filename) {
