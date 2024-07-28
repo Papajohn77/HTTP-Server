@@ -8,35 +8,30 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class Main {
-    private static final int DEFAULT_PORT = 4221;
-    private static final String DEFAULT_BASE_DIRECTORY = System.getProperty("user.dir");
-    private static final int DEFAULT_CORE_POOL_SIZE = 8;
-    private static final int DEFAULT_MAX_POOL_SIZE = 32;
-    private static final int DEFAULT_KEEP_ALIVE = 3000;
+    private static final String CONFIG_PROPERTIES_FILENAME = "config.properties";
 
     public static void main(String[] args) {
-        // Read a configuration file from a specific location
-        // Parse the configuration file and create a Config DTO
-
         try {
-            ServerSocket serverSocket = new ServerSocket(DEFAULT_PORT);
-            System.out.println("Listening on port: " + DEFAULT_PORT);
+            Config config = ConfigProcessor.processConfigFile(CONFIG_PROPERTIES_FILENAME);
+
+            ServerSocket serverSocket = new ServerSocket(config.getPort());
+            System.out.println("Listening on port: " + config.getPort());
 
             // Ensures that the server will be able to restart without
             // waiting for old connections to time out.
             serverSocket.setReuseAddress(true);
 
             ExecutorService threadPool = new ThreadPoolExecutor(
-                    DEFAULT_CORE_POOL_SIZE,
-                    DEFAULT_MAX_POOL_SIZE,
-                    DEFAULT_KEEP_ALIVE,
+                    config.getCorePoolSize(),
+                    config.getMaximumPoolSize(),
+                    config.getKeepAliveTime(),
                     TimeUnit.MILLISECONDS,
                     new LinkedBlockingQueue<>());
 
             HttpServer httpServer = new HttpServer(serverSocket, threadPool);
             Thread serverThread = new Thread(() -> {
                 try {
-                    httpServer.start(DEFAULT_BASE_DIRECTORY);
+                    httpServer.start(config.getBaseDir());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
