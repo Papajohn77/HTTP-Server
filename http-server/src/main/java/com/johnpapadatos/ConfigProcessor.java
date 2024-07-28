@@ -2,8 +2,8 @@ package com.johnpapadatos;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,31 +20,39 @@ public class ConfigProcessor {
     private ConfigProcessor() {
     }
 
-    public static Config processConfigFile(String configPropertiesFilename) {
-        try (InputStream in = ConfigProcessor.class.getClassLoader().getResourceAsStream(configPropertiesFilename)) {
-            if (in == null) {
-                return createDefaultConfig();
-            }
+    public static Config processConfigFile(String configPropertiesFile) {
+        if (!isConfigFileProvided(configPropertiesFile)) {
+            return createDefaultConfig();
+        }
 
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
-                Map<String, String> configOptions = new HashMap<>();
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(new FileInputStream(configPropertiesFile)))) {
+            Map<String, String> configOptions = new HashMap<>();
 
-                String line;
-                while ((line = br.readLine()) != null) {
-                    String[] configOptionParts = line.strip().split("=");
-                    if (configOptionParts.length != 2) {
-                        continue;
-                    }
-                    configOptions.put(configOptionParts[0], configOptionParts[1]);
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] configOptionParts = line.strip().split("=");
+                if (configOptionParts.length != 2) {
+                    continue;
                 }
-
-                return createConfig(configOptions);
+                configOptions.put(configOptionParts[0], configOptionParts[1]);
             }
+
+            return createConfig(configOptions);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         return createDefaultConfig();
+    }
+
+    private static boolean isConfigFileProvided(String configPropertiesFile) {
+        if (configPropertiesFile == null) {
+            return false;
+        }
+
+        File configFile = new File(configPropertiesFile);
+        return configFile.exists() && configFile.isFile();
     }
 
     private static Config createDefaultConfig() {

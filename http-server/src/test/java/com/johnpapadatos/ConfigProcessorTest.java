@@ -21,7 +21,7 @@ class ConfigProcessorTest {
 
     @Test
     void testProcessConfigFile_allPropertiesValid() {
-        String configPropertiesFilename = "config.properties";
+        String configPropertiesFilename = "src/test/resources/config.properties";
         Config actualConfig = ConfigProcessor.processConfigFile(configPropertiesFilename);
         Config expectedConfig = getExpectedConfig_allPropertiesValid();
         assertEquals(expectedConfig, actualConfig);
@@ -29,7 +29,7 @@ class ConfigProcessorTest {
 
     @Test
     void testProcessConfigFile_portValid_maximumPoolSizeInvalid_othersMissing() {
-        String configPropertiesFilename = "config_2.properties";
+        String configPropertiesFilename = "src/test/resources/config_2.properties";
         Config actualConfig = ConfigProcessor.processConfigFile(configPropertiesFilename);
         Config expectedConfig = getExpectedConfig_portValid_maximumPoolSizeInvalid_othersMissing();
         assertEquals(expectedConfig, actualConfig);
@@ -37,7 +37,7 @@ class ConfigProcessorTest {
 
     @Test
     void testProcessConfigFile_corePoolSizeValid_maximumPoolSizeValid_extraOptions() {
-        String configPropertiesFilename = "config_3.properties";
+        String configPropertiesFilename = "src/test/resources/config_3.properties";
         Config actualConfig = ConfigProcessor.processConfigFile(configPropertiesFilename);
         Config expectedConfig = getExpectedConfig_corePoolSizeValid_maximumPoolSizeValid_extraOptions();
         assertEquals(expectedConfig, actualConfig);
@@ -45,7 +45,7 @@ class ConfigProcessorTest {
 
     @Test
     void testProcessConfigFile_allPropertiesValid_trailingSpaces_newLinesBetween() {
-        String configPropertiesFilename = "config_4.properties";
+        String configPropertiesFilename = "src/test/resources/config_4.properties";
         Config actualConfig = ConfigProcessor.processConfigFile(configPropertiesFilename);
         Config expectedConfig = getExpectedConfig_allPropertiesValid_trailingSpaces_newLinesBetween();
         assertEquals(expectedConfig, actualConfig);
@@ -53,7 +53,7 @@ class ConfigProcessorTest {
 
     @Test
     void testProcessConfigFile_allPropertiesInvalid() {
-        String configPropertiesFilename = "config_5.properties";
+        String configPropertiesFilename = "src/test/resources/config_5.properties";
         Config actualConfig = ConfigProcessor.processConfigFile(configPropertiesFilename);
         Config expectedConfig = getExpectedConfig_allPropertiesInvalid();
         assertEquals(expectedConfig, actualConfig);
@@ -69,7 +69,6 @@ class ConfigProcessorTest {
         return config;
     }
 
-    // src/test/resources/config.properties
     private Config getExpectedConfig_allPropertiesValid() {
         Config config = new Config();
         config.setPort(8080);
@@ -80,7 +79,6 @@ class ConfigProcessorTest {
         return config;
     }
 
-    // src/test/resources/config_2.properties
     private Config getExpectedConfig_portValid_maximumPoolSizeInvalid_othersMissing() {
         Config config = new Config();
         config.setPort(8080);
@@ -91,7 +89,6 @@ class ConfigProcessorTest {
         return config;
     }
 
-    // src/test/resources/config_3.properties
     private Config getExpectedConfig_corePoolSizeValid_maximumPoolSizeValid_extraOptions() {
         Config config = new Config();
         config.setPort(DEFAULT_PORT);
@@ -102,7 +99,6 @@ class ConfigProcessorTest {
         return config;
     }
 
-    // src/test/resources/config_4.properties
     private Config getExpectedConfig_allPropertiesValid_trailingSpaces_newLinesBetween() {
         Config config = new Config();
         config.setPort(8080);
@@ -113,7 +109,6 @@ class ConfigProcessorTest {
         return config;
     }
 
-    // src/test/resources/config_5.properties
     private Config getExpectedConfig_allPropertiesInvalid() {
         Config config = new Config();
         config.setPort(DEFAULT_PORT);

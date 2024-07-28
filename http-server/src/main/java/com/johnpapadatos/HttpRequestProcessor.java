@@ -37,7 +37,7 @@ public class HttpRequestProcessor {
     }
 
     private static String getFilename(String path) {
-        return path.substring(path.lastIndexOf("\\") + 1);
+        return path.substring(path.lastIndexOf(File.separator) + 1);
     }
 
     private static String getContentDisposition(Map<String, String> requestHeaders, String filename) {

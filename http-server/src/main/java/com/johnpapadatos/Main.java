@@ -8,11 +8,12 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class Main {
-    private static final String CONFIG_PROPERTIES_FILENAME = "config.properties";
+    private static final String CONFIG_PROPERTIES_FILE_PATH = "./config/config.properties";
 
     public static void main(String[] args) {
         try {
-            Config config = ConfigProcessor.processConfigFile(CONFIG_PROPERTIES_FILENAME);
+            Config config = ConfigProcessor.processConfigFile(CONFIG_PROPERTIES_FILE_PATH);
+            displayAppliedConfigOptions(config);
 
             ServerSocket serverSocket = new ServerSocket(config.getPort());
             System.out.println("Listening on port: " + config.getPort());
@@ -40,5 +41,15 @@ public class Main {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static void displayAppliedConfigOptions(Config config) {
+        System.out.println("=========== Configuration ===========");
+        System.out.println("Port: " + config.getPort());
+        System.out.println("Base directory: " + config.getBaseDir());
+        System.out.println("Core pool size: " + config.getCorePoolSize());
+        System.out.println("Maximum pool size: " + config.getMaximumPoolSize());
+        System.out.println("Keep alive time: " + config.getKeepAliveTime());
+        System.out.println("=====================================");
     }
 }
