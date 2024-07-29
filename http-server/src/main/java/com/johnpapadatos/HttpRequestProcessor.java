@@ -1,10 +1,12 @@
 package com.johnpapadatos;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.util.Map;
+import java.util.zip.GZIPOutputStream;
 
 import org.apache.tika.Tika;
 
@@ -13,6 +15,7 @@ public class HttpRequestProcessor {
     private HttpRequestProcessor() {
     }
 
+    // No DI - will be tested through integration tests
     public static HttpResponse processRequest(HttpRequest httpRequest, String baseDir) throws IOException {
         if (baseDir.endsWith("/")) {
             baseDir = baseDir.substring(0, baseDir.length() - 1); // Strip trailing "/"
@@ -23,7 +26,8 @@ public class HttpRequestProcessor {
         String mimeType = new Tika().detect(requestedResource);
         String contentDisposition = getContentDisposition(httpRequest.getHeaders(),
                 getFilename(requestedResource.getName()));
-        return buildSuccessfulResponse(fileContents, mimeType, contentDisposition);
+        boolean gzipCompression = clientSupportsGzipCompression(httpRequest.getHeaders());
+        return buildSuccessfulResponse(fileContents, mimeType, contentDisposition, gzipCompression);
     }
 
     private static byte[] readFileContents(File file) throws IOException {
@@ -51,18 +55,39 @@ public class HttpRequestProcessor {
         return contentDisposition;
     }
 
+    private static boolean clientSupportsGzipCompression(Map<String, String> requestHeaders) {
+        return requestHeaders.containsKey("Accept-Encoding") && requestHeaders.get("Accept-Encoding").contains("gzip");
+    }
+
     private static HttpResponse buildSuccessfulResponse(
-            byte[] fileContents, String mimeType, String contentDisposition) {
+            byte[] fileContents, String mimeType, String contentDisposition, boolean gzipCompression)
+            throws IOException {
         HttpResponse httpResponse = new HttpResponse();
         httpResponse.setVersion("HTTP/1.1");
         httpResponse.setStatusCode("200");
         httpResponse.setReasonPhrase("OK");
         httpResponse.setHeader("Content-Type", mimeType);
         httpResponse.setHeader("Content-Disposition", contentDisposition);
-        httpResponse.setHeader("Content-Length", Integer.toString(fileContents.length));
         httpResponse.setHeader("Connection", "close");
-        // Content-Encoding: gzip
-        httpResponse.setBody(new String(fileContents));
+
+        if (gzipCompression) {
+            httpResponse.setHeader("Content-Encoding", "gzip");
+            byte[] bodyAsBytesGzipCompressed = getBodyAsBytesGzipCompressed(fileContents);
+            httpResponse.setBody(bodyAsBytesGzipCompressed);
+            httpResponse.setHeader("Content-Length", Integer.toString(bodyAsBytesGzipCompressed.length));
+        } else {
+            httpResponse.setBody(fileContents);
+            httpResponse.setHeader("Content-Length", Integer.toString(fileContents.length));
+        }
+
         return httpResponse;
+    }
+
+    private static byte[] getBodyAsBytesGzipCompressed(byte[] body) throws IOException {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        GZIPOutputStream gzipOutputStream = new GZIPOutputStream(os);
+        gzipOutputStream.write(body, 0, body.length);
+        gzipOutputStream.close();
+        return os.toByteArray();
     }
 }

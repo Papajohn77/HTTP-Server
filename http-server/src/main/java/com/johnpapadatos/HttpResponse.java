@@ -1,7 +1,12 @@
 package com.johnpapadatos;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Stream;
+import java.util.zip.GZIPOutputStream;
 
 public class HttpResponse {
     private static final String CRLF = "\r\n";
@@ -10,7 +15,7 @@ public class HttpResponse {
     private String statusCode;
     private String reasonPhrase;
     private final Map<String, String> headers;
-    private String body;
+    private byte[] body;
 
     public HttpResponse() {
         headers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -48,11 +53,11 @@ public class HttpResponse {
         headers.put(key, value);
     }
 
-    public String getBody() {
+    public byte[] getBody() {
         return body;
     }
 
-    public void setBody(String body) {
+    public void setBody(byte[] body) {
         this.body = body;
     }
 
@@ -64,7 +69,7 @@ public class HttpResponse {
         result = prime * result + ((statusCode == null) ? 0 : statusCode.hashCode());
         result = prime * result + ((reasonPhrase == null) ? 0 : reasonPhrase.hashCode());
         result = prime * result + ((headers == null) ? 0 : headers.hashCode());
-        result = prime * result + ((body == null) ? 0 : body.hashCode());
+        result = prime * result + ((body == null) ? 0 : Arrays.hashCode(body));
         return result;
     }
 
@@ -100,7 +105,7 @@ public class HttpResponse {
         if (body == null) {
             if (other.body != null)
                 return false;
-        } else if (!body.equals(other.body))
+        } else if (!Arrays.equals(body, other.body))
             return false;
         return true;
     }
@@ -111,8 +116,14 @@ public class HttpResponse {
         response.append(
                 String.join(CRLF, headers.entrySet().stream().map(h -> h.getKey() + ": " + h.getValue()).toList()));
         response.append(CRLF).append(CRLF);
-        response.append(body);
-        return response.toString().getBytes();
+        byte[] responseWithoutBodyAsBytes = response.toString().getBytes();
+
+        byte[] responseAsBytes = new byte[responseWithoutBodyAsBytes.length + body.length];
+        System.arraycopy(
+                responseWithoutBodyAsBytes, 0, responseAsBytes, 0, responseWithoutBodyAsBytes.length);
+        System.arraycopy(
+                body, 0, responseAsBytes, responseWithoutBodyAsBytes.length, body.length);
+        return responseAsBytes;
     }
 
     @Override

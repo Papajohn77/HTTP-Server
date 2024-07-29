@@ -2,13 +2,17 @@ package com.johnpapadatos;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
+import static io.restassured.config.DecoderConfig.decoderConfig;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.concurrent.Executors;
+import java.util.zip.GZIPOutputStream;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -40,14 +44,15 @@ class HttpServerIntegrationTests {
         serverThread.start();
 
         RestAssured.baseURI = "http://localhost:" + serverSocket.getLocalPort();
+        RestAssured.config = RestAssured.config()
+                .decoderConfig(decoderConfig().noContentDecoders());
     }
 
     @Test
     void testSuccessfulResponseTXT() throws IOException {
         String requestedResource = "/test.txt";
-        String expectedResponseBody = new String(
-                Files.readAllBytes(Paths.get(TEST_BASE_DIRECTORY + requestedResource)));
-        String expectedContentLength = Integer.toString(expectedResponseBody.getBytes().length);
+        byte[] expectedResponseBody = Files.readAllBytes(Paths.get(TEST_BASE_DIRECTORY + requestedResource));
+        String expectedContentLength = Integer.toString(expectedResponseBody.length);
 
         Response successfulResponse = when()
                 .get(requestedResource)
@@ -59,15 +64,14 @@ class HttpServerIntegrationTests {
         assertEquals("inline", successfulResponse.getHeader("Content-Disposition"));
         assertEquals(expectedContentLength, successfulResponse.getHeader("Content-Length"));
         assertEquals("close", successfulResponse.getHeader("Connection"));
-        assertEquals(expectedResponseBody, successfulResponse.getBody().asString());
+        assertArrayEquals(expectedResponseBody, successfulResponse.getBody().asByteArray());
     }
 
     @Test
     void testSuccessfulResponseHTML() throws IOException {
         String requestedResource = "/test.html";
-        String expectedResponseBody = new String(
-                Files.readAllBytes(Paths.get(TEST_BASE_DIRECTORY + requestedResource)));
-        String expectedContentLength = Integer.toString(expectedResponseBody.getBytes().length);
+        byte[] expectedResponseBody = Files.readAllBytes(Paths.get(TEST_BASE_DIRECTORY + requestedResource));
+        String expectedContentLength = Integer.toString(expectedResponseBody.length);
 
         Response successfulResponse = when()
                 .get(requestedResource)
@@ -79,15 +83,14 @@ class HttpServerIntegrationTests {
         assertEquals("inline", successfulResponse.getHeader("Content-Disposition"));
         assertEquals(expectedContentLength, successfulResponse.getHeader("Content-Length"));
         assertEquals("close", successfulResponse.getHeader("Connection"));
-        assertEquals(expectedResponseBody, successfulResponse.getBody().asString());
+        assertArrayEquals(expectedResponseBody, successfulResponse.getBody().asByteArray());
     }
 
     @Test
     void testSuccessfulResponseTXT_contentDispositionAttachment() throws IOException {
         String requestedResource = "/test.txt";
-        String expectedResponseBody = new String(
-                Files.readAllBytes(Paths.get(TEST_BASE_DIRECTORY + requestedResource)));
-        String expectedContentLength = Integer.toString(expectedResponseBody.getBytes().length);
+        byte[] expectedResponseBody = Files.readAllBytes(Paths.get(TEST_BASE_DIRECTORY + requestedResource));
+        String expectedContentLength = Integer.toString(expectedResponseBody.length);
         String expectedContentDisposition = "attachment; filename=\"" + requestedResource.substring(1) + "\"";
 
         Response successfulResponse = given()
@@ -102,7 +105,53 @@ class HttpServerIntegrationTests {
         assertEquals(expectedContentDisposition, successfulResponse.getHeader("Content-Disposition"));
         assertEquals(expectedContentLength, successfulResponse.getHeader("Content-Length"));
         assertEquals("close", successfulResponse.getHeader("Connection"));
-        assertEquals(expectedResponseBody, successfulResponse.getBody().asString());
+        assertArrayEquals(expectedResponseBody, successfulResponse.getBody().asByteArray());
+    }
+
+    @Test
+    void testSuccessfulResponseTXT_acceptEncodingGzip() throws IOException {
+        String requestedResource = "/test.txt";
+        byte[] expectedResponseBody = getBodyAsBytesGzipCompressed(
+                Files.readAllBytes(Paths.get(TEST_BASE_DIRECTORY + requestedResource)));
+        String expectedContentLength = Integer.toString(expectedResponseBody.length);
+
+        Response successfulResponse = given()
+                .header("Accept-Encoding", "gzip")
+                .when()
+                .get(requestedResource)
+                .then()
+                .extract().response();
+
+        assertEquals(200, successfulResponse.statusCode());
+        assertEquals("text/plain", successfulResponse.getHeader("Content-Type"));
+        assertEquals("inline", successfulResponse.getHeader("Content-Disposition"));
+        assertEquals(expectedContentLength, successfulResponse.getHeader("Content-Length"));
+        assertEquals("close", successfulResponse.getHeader("Connection"));
+        assertArrayEquals(expectedResponseBody, successfulResponse.getBody().asByteArray());
+    }
+
+    @Test
+    void testSuccessfulResponseHTML_acceptEncodingGzip_contentDispositionAttachment() throws IOException {
+        String requestedResource = "/test.html";
+        byte[] expectedResponseBody = getBodyAsBytesGzipCompressed(
+                Files.readAllBytes(Paths.get(TEST_BASE_DIRECTORY + requestedResource)));
+        String expectedContentLength = Integer.toString(expectedResponseBody.length);
+        String expectedContentDisposition = "attachment; filename=\"" + requestedResource.substring(1) + "\"";
+
+        Response successfulResponse = given()
+                .header("Accept-Encoding", "gzip")
+                .header("X-Content-Disposition", "attachment")
+                .when()
+                .get(requestedResource)
+                .then()
+                .extract().response();
+
+        assertEquals(200, successfulResponse.statusCode());
+        assertEquals("text/html", successfulResponse.getHeader("Content-Type"));
+        assertEquals(expectedContentDisposition, successfulResponse.getHeader("Content-Disposition"));
+        assertEquals(expectedContentLength, successfulResponse.getHeader("Content-Length"));
+        assertEquals("close", successfulResponse.getHeader("Connection"));
+        assertArrayEquals(expectedResponseBody, successfulResponse.getBody().asByteArray());
     }
 
     @Test
@@ -178,5 +227,13 @@ class HttpServerIntegrationTests {
         assertEquals(expectedContentLength, successfulResponse.getHeader("Content-Length"));
         assertEquals("close", successfulResponse.getHeader("Connection"));
         assertEquals(expectedResponseBody, successfulResponse.getBody().asString());
+    }
+
+    private static byte[] getBodyAsBytesGzipCompressed(byte[] body) throws IOException {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        GZIPOutputStream gzipOutputStream = new GZIPOutputStream(os);
+        gzipOutputStream.write(body, 0, body.length);
+        gzipOutputStream.close();
+        return os.toByteArray();
     }
 }
