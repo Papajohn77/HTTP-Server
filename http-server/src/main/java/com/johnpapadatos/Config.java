@@ -2,6 +2,7 @@ package com.johnpapadatos;
 
 public class Config {
     private int port;
+    private int backlog;
     private String baseDir;
     private int corePoolSize;
     private int maximumPoolSize;
@@ -50,11 +51,20 @@ public class Config {
         this.keepAliveTime = keepAliveTime;
     }
 
+    public int getBacklog() {
+        return backlog;
+    }
+
+    public void setBacklog(int backlog) {
+        this.backlog = backlog;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + port;
+        result = prime * result + backlog;
         result = prime * result + ((baseDir == null) ? 0 : baseDir.hashCode());
         result = prime * result + corePoolSize;
         result = prime * result + maximumPoolSize;
@@ -73,6 +83,8 @@ public class Config {
         Config other = (Config) obj;
         if (port != other.port)
             return false;
+        if (backlog != other.backlog)
+            return false;
         if (baseDir == null) {
             if (other.baseDir != null)
                 return false;
@@ -90,6 +102,7 @@ public class Config {
     @Override
     public String toString() {
         return "Config [port=" + port
+                + ", backlog=" + backlog
                 + ", baseDir=" + baseDir
                 + ", corePoolSize=" + corePoolSize
                 + ", maximumPoolSize=" + maximumPoolSize

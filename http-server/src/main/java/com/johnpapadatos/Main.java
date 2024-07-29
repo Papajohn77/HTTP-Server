@@ -15,7 +15,7 @@ public class Main {
             Config config = ConfigProcessor.processConfigFile(CONFIG_PROPERTIES_FILE_PATH);
             displayAppliedConfigOptions(config);
 
-            ServerSocket serverSocket = new ServerSocket(config.getPort());
+            ServerSocket serverSocket = new ServerSocket(config.getPort(), config.getBacklog());
             System.out.println("Listening on port: " + config.getPort());
 
             // Ensures that the server will be able to restart without

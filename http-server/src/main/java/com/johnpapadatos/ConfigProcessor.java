@@ -10,6 +10,7 @@ import java.util.Map;
 
 public class ConfigProcessor {
     private static final int DEFAULT_PORT = 7290;
+    private static final int DEFAULT_BACKLOG = 50;
     private static final String DEFAULT_BASE_DIRECTORY = System.getProperty("user.dir");
     private static final int DEFAULT_CORE_POOL_SIZE = Runtime.getRuntime().availableProcessors() / 2;
     private static final int DEFAULT_MAX_POOL_SIZE = Runtime.getRuntime().availableProcessors();
@@ -58,6 +59,7 @@ public class ConfigProcessor {
     private static Config createDefaultConfig() {
         Config config = new Config();
         config.setPort(DEFAULT_PORT);
+        config.setBacklog(DEFAULT_BACKLOG);
         config.setBaseDir(DEFAULT_BASE_DIRECTORY);
         config.setCorePoolSize(DEFAULT_CORE_POOL_SIZE);
         config.setMaximumPoolSize(DEFAULT_MAX_POOL_SIZE);
@@ -72,6 +74,11 @@ public class ConfigProcessor {
                 ? Integer.parseInt(configOptions.get("port"))
                 : DEFAULT_PORT;
         config.setPort(port);
+
+        int backlog = isValidBacklog(configOptions.get("backlog"))
+                ? Integer.parseInt(configOptions.get("backlog"))
+                : DEFAULT_BACKLOG;
+        config.setBacklog(backlog);
 
         String baseDir = isValidBaseDir(configOptions.get("baseDir"))
                 ? configOptions.get("baseDir")
@@ -107,6 +114,18 @@ public class ConfigProcessor {
 
         return Integer.parseInt(port) >= REGISTER_PORT_RANGE_LOWER_BOUND
                 && Integer.parseInt(port) <= REGISTER_PORT_RANGE_UPPER_BOUND;
+    }
+
+    private static boolean isValidBacklog(String backlog) {
+        if (backlog == null) {
+            return false;
+        }
+
+        if (!backlog.matches("\\d+")) {
+            return false;
+        }
+
+        return Integer.parseInt(backlog) > 0;
     }
 
     private static boolean isValidBaseDir(String baseDirPath) {

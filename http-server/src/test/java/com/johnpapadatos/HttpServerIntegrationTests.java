@@ -219,9 +219,6 @@ class HttpServerIntegrationTests {
                 .then()
                 .extract().response();
 
-        System.out.println(successfulResponse.getBody().asString());
-        System.out.println(successfulResponse.getHeader("Content-Length"));
-
         assertEquals(404, successfulResponse.statusCode());
         assertEquals("text/plain", successfulResponse.getHeader("Content-Type"));
         assertEquals(expectedContentLength, successfulResponse.getHeader("Content-Length"));
