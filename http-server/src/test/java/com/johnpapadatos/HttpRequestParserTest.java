@@ -120,7 +120,7 @@ class HttpRequestParserTest {
     private HttpRequest getExpectedHttpRequest_simpleHttpRequest() {
         HttpRequest expectedHttpRequest = new HttpRequest();
         expectedHttpRequest.setMethod("GET");
-        expectedHttpRequest.setPath("/");
+        expectedHttpRequest.setPath("/index.html");
         expectedHttpRequest.setVersion("HTTP/1.1");
         expectedHttpRequest.setBody("");
         return expectedHttpRequest;
@@ -129,7 +129,7 @@ class HttpRequestParserTest {
     private HttpRequest getExpectedHttpRequest_simpleHttpRequest_withHeaders() {
         HttpRequest expectedHttpRequest = new HttpRequest();
         expectedHttpRequest.setMethod("GET");
-        expectedHttpRequest.setPath("/");
+        expectedHttpRequest.setPath("/index.html");
         expectedHttpRequest.setVersion("HTTP/1.1");
         expectedHttpRequest.setHeader("Host", "localhost:4221");
         expectedHttpRequest.setHeader("User-Agent", "curl/7.64.1");
@@ -141,7 +141,7 @@ class HttpRequestParserTest {
     private HttpRequest getExpectedHttpRequest_simpleHttpRequest_withHeadersAndBody() {
         HttpRequest expectedHttpRequest = new HttpRequest();
         expectedHttpRequest.setMethod("GET");
-        expectedHttpRequest.setPath("/");
+        expectedHttpRequest.setPath("/index.html");
         expectedHttpRequest.setVersion("HTTP/1.1");
         expectedHttpRequest.setHeader("Host", "localhost:4221");
         expectedHttpRequest.setHeader("User-Agent", "curl/7.64.1");
@@ -155,7 +155,7 @@ class HttpRequestParserTest {
     private HttpRequest getExpectedHttpRequest_simpleHttpRequest_withBodyAndNoContentLength() {
         HttpRequest expectedHttpRequest = new HttpRequest();
         expectedHttpRequest.setMethod("GET");
-        expectedHttpRequest.setPath("/");
+        expectedHttpRequest.setPath("/index.html");
         expectedHttpRequest.setVersion("HTTP/1.1");
         expectedHttpRequest.setHeader("Host", "localhost:4221");
         expectedHttpRequest.setHeader("User-Agent", "curl/7.64.1");

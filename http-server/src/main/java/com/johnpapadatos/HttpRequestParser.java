@@ -34,6 +34,8 @@ public class HttpRequestParser {
         String path = requestLineParts[1];
         if (!path.startsWith("/")) {
             throw new IllegalArgumentException("Invalid request-target.");
+        } else if (path.equals("/")) {
+            path = "/index.html";
         }
         httpRequest.setPath(path);
 
