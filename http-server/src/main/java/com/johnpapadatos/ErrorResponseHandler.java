@@ -21,6 +21,12 @@ public class ErrorResponseHandler {
         out.flush();
     }
 
+    public static void send405ErrorResponse(OutputStream out, String message) throws IOException {
+        String response = buildErrorResponse("405", "Method Not Allowed", message);
+        out.write(response.getBytes());
+        out.flush();
+    }
+
     public static void send500ErrorResponse(OutputStream out, String message) throws IOException {
         String response = buildErrorResponse("500", "Internal Server Error", message);
         out.write(response.getBytes());

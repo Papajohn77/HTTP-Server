@@ -46,6 +46,7 @@ public class Main {
     public static void displayAppliedConfigOptions(Config config) {
         System.out.println("=========== Configuration ===========");
         System.out.println("Port: " + config.getPort());
+        System.out.println("Backlog: " + config.getBacklog());
         System.out.println("Base directory: " + config.getBaseDir());
         System.out.println("Core pool size: " + config.getCorePoolSize());
         System.out.println("Maximum pool size: " + config.getMaximumPoolSize());

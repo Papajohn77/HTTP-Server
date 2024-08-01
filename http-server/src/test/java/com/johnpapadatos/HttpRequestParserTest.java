@@ -10,9 +10,11 @@ import java.io.InputStreamReader;
 
 import org.junit.jupiter.api.Test;
 
+import com.johnpapadatos.exceptions.MethodNotSupportedException;
+
 class HttpRequestParserTest {
     @Test
-    void testParseRequest_simpleHttpRequest() throws IOException {
+    void testParseRequest_simpleHttpRequest() throws IOException, MethodNotSupportedException {
         String httpRequest = "GET / HTTP/1.1\r\n\r\n";
         BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(httpRequest.getBytes())));
         HttpRequest expectedHttpRequest = getExpectedHttpRequest_simpleHttpRequest();
@@ -21,7 +23,7 @@ class HttpRequestParserTest {
     }
 
     @Test
-    void testParseRequest_simpleHttpRequest_withHeaders() throws IOException {
+    void testParseRequest_simpleHttpRequest_withHeaders() throws IOException, MethodNotSupportedException {
         String httpRequest = "GET / HTTP/1.1\r\n"
                 + "Host: localhost:4221\r\n"
                 + "User-Agent: curl/7.64.1\r\n"
@@ -34,7 +36,7 @@ class HttpRequestParserTest {
     }
 
     @Test
-    void testParseRequest_simpleHttpRequest_withHeadersAndBody() throws IOException {
+    void testParseRequest_simpleHttpRequest_withHeadersAndBody() throws IOException, MethodNotSupportedException {
         String httpRequest = "GET / HTTP/1.1\r\n"
                 + "Host: localhost:4221\r\n"
                 + "User-Agent: curl/7.64.1\r\n"
@@ -54,7 +56,7 @@ class HttpRequestParserTest {
      * request body.
      */
     @Test
-    void testParseRequest_simpleHttpRequest_withBodyAndNoContentLength() throws IOException {
+    void testParseRequest_simpleHttpRequest_withBodyAndNoContentLength() throws IOException, MethodNotSupportedException {
         String httpRequest = "GET / HTTP/1.1\r\n"
                 + "Host: localhost:4221\r\n"
                 + "User-Agent: curl/7.64.1\r\n"
@@ -68,11 +70,11 @@ class HttpRequestParserTest {
     }
 
     @Test
-    void testParseRequest_simpleHttpRequest_invalidRequestLine() throws IOException {
+    void testParseRequest_simpleHttpRequest_invalidRequestLine() {
         String httpRequestInvalidMethod = "POST / HTTP/1.1\r\n\r\n";
         BufferedReader brInvalidMethod = new BufferedReader(
                 new InputStreamReader(new ByteArrayInputStream(httpRequestInvalidMethod.getBytes())));
-        assertThrows(IllegalArgumentException.class, () -> HttpRequestParser.parseRequest(brInvalidMethod));
+        assertThrows(MethodNotSupportedException.class, () -> HttpRequestParser.parseRequest(brInvalidMethod));
 
         String httpRequestInvalidPath = "GET path HTTP/1.1\r\n\r\n";
         BufferedReader brInvalidPath = new BufferedReader(
@@ -86,7 +88,7 @@ class HttpRequestParserTest {
     }
 
     @Test
-    void testParseRequest_simpleHttpRequest_invalidHeaders() throws IOException {
+    void testParseRequest_simpleHttpRequest_invalidHeaders() {
         String httpRequestInvalidHeader1 = "GET / HTTP/1.1\r\n"
                 + "Host:localhost:4221\r\n" // No space after colon
                 + "User-Agent: curl/7.64.1\r\n"

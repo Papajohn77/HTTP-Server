@@ -3,12 +3,14 @@ package com.johnpapadatos;
 import java.io.BufferedReader;
 import java.io.IOException;
 
+import com.johnpapadatos.exceptions.MethodNotSupportedException;
+
 public class HttpRequestParser {
 
     private HttpRequestParser() {
     }
 
-    public static HttpRequest parseRequest(BufferedReader br) throws IOException {
+    public static HttpRequest parseRequest(BufferedReader br) throws IOException, MethodNotSupportedException {
         HttpRequest httpRequest = new HttpRequest();
         parseRequestLine(br, httpRequest);
         parseRequestHeaders(br, httpRequest);
@@ -17,7 +19,7 @@ public class HttpRequestParser {
     }
 
     private static void parseRequestLine(
-            BufferedReader br, HttpRequest httpRequest) throws IOException {
+            BufferedReader br, HttpRequest httpRequest) throws IOException, MethodNotSupportedException {
         String[] requestLineParts = br.readLine().split(" ");
         if (requestLineParts.length != 3) {
             throw new IllegalArgumentException("Invalid request-line.");
@@ -25,7 +27,7 @@ public class HttpRequestParser {
 
         String method = requestLineParts[0];
         if (!method.equals("GET")) {
-            throw new IllegalArgumentException(method + " method not supported.");
+            throw new MethodNotSupportedException(method + " method not allowed.");
         }
         httpRequest.setMethod(method);
 

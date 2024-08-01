@@ -8,6 +8,8 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.file.NoSuchFileException;
 
+import com.johnpapadatos.exceptions.MethodNotSupportedException;
+
 public class WorkerRunnable implements Runnable {
     private final Socket socket;
     private final String baseDir;
@@ -47,6 +49,9 @@ public class WorkerRunnable implements Runnable {
         } catch (NoSuchFileException e) {
             e.printStackTrace();
             ErrorResponseHandler.send404ErrorResponse(out, e.getMessage());
+        } catch (MethodNotSupportedException e) {
+            e.printStackTrace();
+            ErrorResponseHandler.send405ErrorResponse(out, e.getMessage());
         } catch (IOException e) {
             e.printStackTrace();
             ErrorResponseHandler.send500ErrorResponse(out, e.getMessage());

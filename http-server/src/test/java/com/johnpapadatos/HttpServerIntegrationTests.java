@@ -157,7 +157,7 @@ class HttpServerIntegrationTests {
     @Test
     void testError400Response_unsupportedMethod_POST() {
         String requestedResource = "/test.txt";
-        String expectedResponseBody = "POST method not supported.";
+        String expectedResponseBody = "POST method not allowed.";
         String expectedContentLength = Integer.toString(expectedResponseBody.getBytes().length);
 
         Response error400Response = when()
@@ -165,7 +165,7 @@ class HttpServerIntegrationTests {
                 .then()
                 .extract().response();
 
-        assertEquals(400, error400Response.statusCode());
+        assertEquals(405, error400Response.statusCode());
         assertEquals("text/plain", error400Response.getHeader("Content-Type"));
         assertEquals(expectedContentLength, error400Response.getHeader("Content-Length"));
         assertEquals("close", error400Response.getHeader("Connection"));
@@ -175,7 +175,7 @@ class HttpServerIntegrationTests {
     @Test
     void testError400Response_unsupportedMethod_PUT() {
         String requestedResource = "/test.txt";
-        String expectedResponseBody = "PUT method not supported.";
+        String expectedResponseBody = "PUT method not allowed.";
         String expectedContentLength = Integer.toString(expectedResponseBody.getBytes().length);
 
         Response error400Response = when()
@@ -183,7 +183,7 @@ class HttpServerIntegrationTests {
                 .then()
                 .extract().response();
 
-        assertEquals(400, error400Response.statusCode());
+        assertEquals(405, error400Response.statusCode());
         assertEquals("text/plain", error400Response.getHeader("Content-Type"));
         assertEquals(expectedContentLength, error400Response.getHeader("Content-Length"));
         assertEquals("close", error400Response.getHeader("Connection"));
@@ -193,7 +193,7 @@ class HttpServerIntegrationTests {
     @Test
     void testError400Response_unsupportedMethod_DELETE() {
         String requestedResource = "/test.txt";
-        String expectedResponseBody = "DELETE method not supported.";
+        String expectedResponseBody = "DELETE method not allowed.";
         String expectedContentLength = Integer.toString(expectedResponseBody.getBytes().length);
 
         Response error400Response = when()
@@ -201,7 +201,7 @@ class HttpServerIntegrationTests {
                 .then()
                 .extract().response();
 
-        assertEquals(400, error400Response.statusCode());
+        assertEquals(405, error400Response.statusCode());
         assertEquals("text/plain", error400Response.getHeader("Content-Type"));
         assertEquals(expectedContentLength, error400Response.getHeader("Content-Length"));
         assertEquals("close", error400Response.getHeader("Connection"));
